@@ -15,6 +15,7 @@ Edit `.env.remote` and fill in the real server values:
 ```text
 REMOTE_HOST=user@server
 REMOTE_PORT=22
+REMOTE_REPO_URL=https://github.com/example/project.git
 REMOTE_PROJECT_DIR=/data/user/project
 REMOTE_CONDA_ENV=myenv
 REMOTE_DATA_ROOT=/data/user/datasets/my_dataset
