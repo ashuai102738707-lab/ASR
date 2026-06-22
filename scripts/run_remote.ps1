@@ -41,6 +41,10 @@ function Require-Env {
 Import-DotEnv -Path $EnvFile
 
 $remoteHost = Require-Env "REMOTE_HOST"
+$remotePort = [Environment]::GetEnvironmentVariable("REMOTE_PORT", "Process")
+if ([string]::IsNullOrWhiteSpace($remotePort)) {
+    $remotePort = "22"
+}
 $remoteProjectDir = Require-Env "REMOTE_PROJECT_DIR"
 $remoteCondaEnv = Require-Env "REMOTE_CONDA_ENV"
 $remoteDataRoot = Require-Env "REMOTE_DATA_ROOT"
@@ -64,4 +68,4 @@ git pull
 REMOTE_CONDA_ENV='$remoteCondaEnv' REMOTE_DATA_ROOT='$remoteDataRoot' REMOTE_EXPERIMENT_ROOT='$remoteExperimentRoot' bash scripts/server_run_exp.sh '$Config'
 "@
 
-ssh $remoteHost $remoteCommand
+ssh -p $remotePort $remoteHost $remoteCommand
