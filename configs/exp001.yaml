@@ -1,0 +1,12 @@
+# Example experiment config.
+# Keep dataset and output paths configurable so local code and remote runs do not diverge.
+
+experiment_name: exp001
+data_root: ${REMOTE_DATA_ROOT}
+output_dir: ${REMOTE_EXPERIMENT_ROOT}/exp001
+
+train:
+  seed: 42
+  batch_size: 32
+  epochs: 10
+  learning_rate: 0.001

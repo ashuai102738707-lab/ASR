@@ -1,0 +1,36 @@
+# Local machine state
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Datasets and experiment artifacts
+data/
+datasets/
+experiments/
+checkpoints/
+logs/
+runs/
+wandb/
+mlruns/
+
+# Model artifacts
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
