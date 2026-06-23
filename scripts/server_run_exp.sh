@@ -113,6 +113,13 @@ if matched == 0:
 print(f"Matched manifest examples: {matched}")
 PY
 
+if [[ -f scripts/preprocess_manifests.py ]]; then
+  python scripts/preprocess_manifests.py \
+    --manifest-dir "$RUN_DIR/manifests" \
+    --output-dir "$RUN_DIR/preprocessed" \
+    2>&1 | tee "$RUN_DIR/preprocess.log"
+fi
+
 if [[ -f scripts/analyze_tokenization.py ]]; then
   ANALYSIS_ENABLED="$(python - "$CONFIG" <<'PY'
 import sys
@@ -135,7 +142,8 @@ run_dir = Path(sys.argv[2])
 cfg = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
 analysis = cfg.get("analysis") or {}
 split = analysis.get("split", "train")
-manifest = run_dir / "manifests" / f"{split}.jsonl"
+preprocessed_manifest = run_dir / "preprocessed" / f"{split}.jsonl"
+manifest = preprocessed_manifest if preprocessed_manifest.exists() else run_dir / "manifests" / f"{split}.jsonl"
 output = run_dir / "tokenization_fragmentation.json"
 cmd = [
     "python",

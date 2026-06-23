@@ -94,7 +94,10 @@ def main() -> None:
     feature_extractor = AutoFeatureExtractor.from_pretrained(speech_encoder_name, trust_remote_code=True)
 
     manifest_dir = output_dir / "manifests"
-    train_manifest = Path(str(data_cfg.get("train_manifest", manifest_dir / "train.jsonl")))
+    default_train_manifest = output_dir / "preprocessed" / "train.jsonl"
+    if not default_train_manifest.exists():
+        default_train_manifest = manifest_dir / "train.jsonl"
+    train_manifest = Path(str(data_cfg.get("train_manifest", default_train_manifest)))
     languages = config.get("languages")
     if not isinstance(languages, list):
         languages = None
