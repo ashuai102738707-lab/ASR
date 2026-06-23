@@ -32,6 +32,16 @@ echo "Run directory: $RUN_DIR"
 echo "Config: $CONFIG"
 echo "Data root: $REMOTE_DATA_ROOT"
 
+if [[ -f prepare_fleurs.py ]]; then
+  python prepare_fleurs.py \
+    --config "$CONFIG" \
+    --data-root "$REMOTE_DATA_ROOT" \
+    --output-dir "$RUN_DIR" \
+    2>&1 | tee "$RUN_DIR/prepare.log"
+else
+  echo "No prepare_fleurs.py found. Skipping data preparation." | tee "$RUN_DIR/prepare.log"
+fi
+
 if [[ -f train.py ]]; then
   python train.py \
     --config "$CONFIG" \

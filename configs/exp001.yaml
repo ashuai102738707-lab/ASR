@@ -4,6 +4,14 @@
 experiment_name: exp001
 data_root: ${REMOTE_DATA_ROOT}
 output_dir: ${REMOTE_EXPERIMENT_ROOT}/exp001
+languages:
+  - km_kh
+  - lo_la
+  - my_mm
+  - th_th
+
+prepare:
+  extract_audio: true
 
 train:
   seed: 42
