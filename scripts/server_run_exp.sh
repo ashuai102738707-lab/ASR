@@ -19,12 +19,14 @@ mkdir -p "$RUN_DIR"
 
 cp "$CONFIG" "$RUN_DIR/config.yaml"
 
-if command -v conda >/dev/null 2>&1; then
+if [[ "${CONDA_DEFAULT_ENV:-}" == "$REMOTE_CONDA_ENV" ]]; then
+  echo "Using active conda environment: $CONDA_DEFAULT_ENV"
+elif command -v conda >/dev/null 2>&1; then
   # shellcheck disable=SC1091
   source "$(conda info --base)/etc/profile.d/conda.sh"
   conda activate "$REMOTE_CONDA_ENV"
 else
-  echo "conda is not available on PATH" >&2
+  echo "conda is not available on PATH and active env is '${CONDA_DEFAULT_ENV:-none}', expected '$REMOTE_CONDA_ENV'" >&2
   exit 1
 fi
 
