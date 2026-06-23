@@ -23,26 +23,27 @@ The current code provides:
 
 ## Expected Server Layout
 
-From the current server screenshot, use:
+Use only the `xhm_files` workspace:
 
 ```text
-Code:        /home/speech/ASR
-Data:        /home/speech/fleurs_subset
-Experiments: /home/speech/experiments/qwen3_asr
+Code:        /datasets/xhm_files/ASR
+Data:        /datasets/xhm_files/fleurs_subset
+Experiments: /datasets/xhm_files/experiments/qwen3_asr
 SSH:         speech@222.197.200.131 -p 40022
+Conda env:   xhm_home
 ```
 
-Adjust paths if your actual home directory differs.
+Do not write outside `/datasets/xhm_files`.
 
 ## Install Dependencies on the Server
 
 ```bash
-cd /home/speech/ASR
-conda activate asr
+cd /datasets/xhm_files/ASR
+conda activate xhm_home
 pip install -r requirements.txt
 ```
 
-If the environment name is not `asr`, update `.env.remote` locally or export
+If the environment name is not `xhm_home`, update `.env.remote` locally or export
 `REMOTE_CONDA_ENV` on the server.
 
 ## Run on the Server
@@ -50,29 +51,29 @@ If the environment name is not `asr`, update `.env.remote` locally or export
 Smoke test:
 
 ```bash
-cd /home/speech/ASR
+cd /datasets/xhm_files/ASR
 git pull
-REMOTE_CONDA_ENV=asr \
-REMOTE_DATA_ROOT=/home/speech/fleurs_subset \
-REMOTE_EXPERIMENT_ROOT=/home/speech/experiments/qwen3_asr \
+REMOTE_CONDA_ENV=xhm_home \
+REMOTE_DATA_ROOT=/datasets/xhm_files/fleurs_subset \
+REMOTE_EXPERIMENT_ROOT=/datasets/xhm_files/experiments/qwen3_asr \
 bash scripts/server_run_exp.sh configs/exp001.yaml
 ```
 
 Full Qwen3-0.6B run:
 
 ```bash
-REMOTE_CONDA_ENV=asr \
-REMOTE_DATA_ROOT=/home/speech/fleurs_subset \
-REMOTE_EXPERIMENT_ROOT=/home/speech/experiments/qwen3_asr \
+REMOTE_CONDA_ENV=xhm_home \
+REMOTE_DATA_ROOT=/datasets/xhm_files/fleurs_subset \
+REMOTE_EXPERIMENT_ROOT=/datasets/xhm_files/experiments/qwen3_asr \
 bash scripts/server_run_exp.sh configs/qwen3_0p6b_full.yaml
 ```
 
 Qwen3-1.7B two-language ablation:
 
 ```bash
-REMOTE_CONDA_ENV=asr \
-REMOTE_DATA_ROOT=/home/speech/fleurs_subset \
-REMOTE_EXPERIMENT_ROOT=/home/speech/experiments/qwen3_asr \
+REMOTE_CONDA_ENV=xhm_home \
+REMOTE_DATA_ROOT=/datasets/xhm_files/fleurs_subset \
+REMOTE_EXPERIMENT_ROOT=/datasets/xhm_files/experiments/qwen3_asr \
 bash scripts/server_run_exp.sh configs/qwen3_1p7b_ablation.yaml
 ```
 
@@ -101,7 +102,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run_remote.ps1 -Config configs/
 Before deleting anything on the server, run:
 
 ```bash
-bash /home/speech/ASR/scripts/server_audit_storage.sh /home/speech
+bash /datasets/xhm_files/ASR/scripts/server_audit_storage.sh /datasets/xhm_files
 ```
 
 This script only reports directory sizes, cache folders, and large checkpoint
