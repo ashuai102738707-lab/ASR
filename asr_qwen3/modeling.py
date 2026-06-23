@@ -6,6 +6,8 @@ import torch
 from torch import nn
 from transformers import AutoModel, AutoModelForCausalLM
 
+from .hf_local import resolve_local_snapshot
+
 
 @dataclass
 class SpeechQwenOutput:
@@ -29,12 +31,15 @@ class SpeechToQwen(nn.Module):
         freeze_speech_encoder: bool = True,
         freeze_llm: bool = True,
         torch_dtype: torch.dtype | None = None,
+        local_files_only: bool = True,
     ) -> None:
         super().__init__()
+        speech_encoder_name = resolve_local_snapshot(speech_encoder_name, local_files_only)
+        llm_name = resolve_local_snapshot(llm_name, local_files_only)
         model_kwargs = {
             "trust_remote_code": True,
             "use_safetensors": True,
-            "local_files_only": True,
+            "local_files_only": local_files_only,
         }
         if torch_dtype is not None:
             model_kwargs["dtype"] = torch_dtype

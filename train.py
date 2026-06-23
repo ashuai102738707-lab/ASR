@@ -16,6 +16,7 @@ from transformers import AutoFeatureExtractor, AutoTokenizer, get_linear_schedul
 
 from asr_qwen3.config import load_config
 from asr_qwen3.data import SpeechTextCollator, SpeechTextDataset
+from asr_qwen3.hf_local import resolve_local_snapshot
 from asr_qwen3.modeling import SpeechToQwen
 
 
@@ -89,15 +90,20 @@ def main() -> None:
     llm_name = str(model_cfg.get("llm_name", "Qwen/Qwen3-0.6B"))
     speech_encoder_name = str(model_cfg.get("speech_encoder_name", "facebook/wav2vec2-xls-r-300m"))
     local_files_only = bool(train_cfg.get("local_files_only", True))
+    llm_load_path = resolve_local_snapshot(llm_name, local_files_only=local_files_only)
+    speech_encoder_load_path = resolve_local_snapshot(
+        speech_encoder_name,
+        local_files_only=local_files_only,
+    )
     tokenizer = AutoTokenizer.from_pretrained(
-        llm_name,
+        llm_load_path,
         trust_remote_code=True,
         local_files_only=local_files_only,
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     feature_extractor = AutoFeatureExtractor.from_pretrained(
-        speech_encoder_name,
+        speech_encoder_load_path,
         trust_remote_code=True,
         local_files_only=local_files_only,
     )
@@ -141,6 +147,7 @@ def main() -> None:
         freeze_speech_encoder=bool(model_cfg.get("freeze_speech_encoder", True)),
         freeze_llm=bool(model_cfg.get("freeze_llm", True)),
         torch_dtype=dtype,
+        local_files_only=local_files_only,
     )
     maybe_apply_lora(model, train_cfg)
     if bool(train_cfg.get("gradient_checkpointing", False)):
