@@ -65,12 +65,28 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Comma-separated language ids. Defaults to every directory.",
     )
-    parser.add_argument(
-        "--extract-audio",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Extract split audio tarballs into the output directory.",
-    )
+    if hasattr(argparse, "BooleanOptionalAction"):
+        parser.add_argument(
+            "--extract-audio",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help="Extract split audio tarballs into the output directory.",
+        )
+    else:
+        extract_group = parser.add_mutually_exclusive_group()
+        extract_group.add_argument(
+            "--extract-audio",
+            dest="extract_audio",
+            action="store_true",
+            default=True,
+            help="Extract split audio tarballs into the output directory.",
+        )
+        extract_group.add_argument(
+            "--no-extract-audio",
+            dest="extract_audio",
+            action="store_false",
+            help="Do not extract split audio tarballs.",
+        )
     return parser.parse_args()
 
 
