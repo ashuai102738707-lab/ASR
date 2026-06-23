@@ -1,7 +1,8 @@
 param(
     [string]$Config = "configs/exp001.yaml",
     [string]$EnvFile = ".env.remote",
-    [switch]$NoPush
+    [switch]$NoPush,
+    [string]$RemoteAlias = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,6 +43,10 @@ Import-DotEnv -Path $EnvFile
 
 $remoteHost = Require-Env "REMOTE_HOST"
 $remotePort = [Environment]::GetEnvironmentVariable("REMOTE_PORT", "Process")
+if (-not [string]::IsNullOrWhiteSpace($RemoteAlias)) {
+    $remoteHost = $RemoteAlias
+    $remotePort = ""
+}
 if ([string]::IsNullOrWhiteSpace($remotePort)) {
     $remotePort = "22"
 }

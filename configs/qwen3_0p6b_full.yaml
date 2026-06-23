@@ -1,10 +1,6 @@
-# Qwen3 speech-to-text smoke experiment.
-# This config is intentionally short-running. Increase train.max_steps after the
-# data/tokenizer/model path has been verified on the server.
-
-experiment_name: qwen3_0p6b_smoke
+experiment_name: qwen3_0p6b_full
 data_root: ${REMOTE_DATA_ROOT}
-output_dir: ${REMOTE_EXPERIMENT_ROOT}/qwen3_0p6b_smoke
+output_dir: ${REMOTE_EXPERIMENT_ROOT}/qwen3_0p6b_full
 languages:
   - km_kh
   - lo_la
@@ -17,9 +13,10 @@ prepare:
 analysis:
   enabled: true
   split: train
-  max_examples_per_language: 200
+  max_examples_per_language: 2000
   tokenizers:
     - Qwen/Qwen3-0.6B
+    - Qwen/Qwen3-1.7B
     - openai/whisper-small
 
 model:
@@ -30,27 +27,25 @@ model:
   freeze_llm: true
 
 data:
-  max_duration_seconds: 16
+  max_duration_seconds: 18
   max_text_length: 256
-  sample_limit: 128
 
 train:
   seed: 42
   batch_size: 1
-  gradient_accumulation_steps: 8
-  epochs: 1
-  max_steps: 20
+  gradient_accumulation_steps: 16
+  epochs: 3
+  max_steps: 0
   learning_rate: 0.0001
   weight_decay: 0.01
-  warmup_steps: 2
   fp16: true
   gradient_checkpointing: true
   max_grad_norm: 1.0
-  log_every: 1
-  save_every: 0
-  num_workers: 0
+  log_every: 10
+  save_every: 500
+  num_workers: 2
   lora:
-    enabled: false
+    enabled: true
     r: 8
     alpha: 16
     dropout: 0.05

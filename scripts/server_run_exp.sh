@@ -76,6 +76,53 @@ else
   echo "No prepare_fleurs.py found. Skipping data preparation." | tee "$RUN_DIR/prepare.log"
 fi
 
+if [[ -f scripts/analyze_tokenization.py ]]; then
+  ANALYSIS_ENABLED="$(python - "$CONFIG" <<'PY'
+import sys
+import yaml
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    cfg = yaml.safe_load(handle) or {}
+print(str((cfg.get("analysis") or {}).get("enabled", False)).lower())
+PY
+)"
+  if [[ "$ANALYSIS_ENABLED" == "true" ]]; then
+    python - "$CONFIG" "$RUN_DIR" <<'PY' | bash 2>&1 | tee "$RUN_DIR/tokenization.log"
+import shlex
+import sys
+import yaml
+from pathlib import Path
+
+config_path = Path(sys.argv[1])
+run_dir = Path(sys.argv[2])
+cfg = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+analysis = cfg.get("analysis") or {}
+split = analysis.get("split", "train")
+manifest = run_dir / "manifests" / f"{split}.jsonl"
+output = run_dir / "tokenization_fragmentation.json"
+cmd = [
+    "python",
+    "scripts/analyze_tokenization.py",
+    "--manifest",
+    str(manifest),
+    "--output",
+    str(output),
+]
+for tokenizer in analysis.get("tokenizers", []):
+    cmd.extend(["--tokenizer", str(tokenizer)])
+languages = cfg.get("languages") or []
+if languages:
+    cmd.extend(["--languages", ",".join(str(item) for item in languages)])
+max_examples = int(analysis.get("max_examples_per_language", 0) or 0)
+if max_examples:
+    cmd.extend(["--max-examples-per-language", str(max_examples)])
+print(" ".join(shlex.quote(part) for part in cmd))
+PY
+  else
+    echo "Tokenization analysis disabled by config." | tee "$RUN_DIR/tokenization.log"
+  fi
+fi
+
 if [[ -f train.py ]]; then
   python train.py \
     --config "$CONFIG" \

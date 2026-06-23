@@ -34,3 +34,9 @@ mlruns/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local generated manifests/reports
+*.log
+tokenization_fragmentation.json
+prepare_summary.json
+dataset_summary.json
