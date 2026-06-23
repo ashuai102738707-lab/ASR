@@ -31,15 +31,19 @@ class SpeechToQwen(nn.Module):
         torch_dtype: torch.dtype | None = None,
     ) -> None:
         super().__init__()
+        model_kwargs = {
+            "trust_remote_code": True,
+            "use_safetensors": True,
+        }
+        if torch_dtype is not None:
+            model_kwargs["dtype"] = torch_dtype
         self.speech_encoder = AutoModel.from_pretrained(
             speech_encoder_name,
-            trust_remote_code=True,
-            torch_dtype=torch_dtype,
+            **model_kwargs,
         )
         self.llm = AutoModelForCausalLM.from_pretrained(
             llm_name,
-            trust_remote_code=True,
-            torch_dtype=torch_dtype,
+            **model_kwargs,
         )
         speech_hidden = int(getattr(self.speech_encoder.config, "hidden_size"))
         llm_hidden = int(getattr(self.llm.config, "hidden_size"))
