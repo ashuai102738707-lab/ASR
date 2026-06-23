@@ -19,6 +19,11 @@ from typing import Iterable
 
 AUDIO_EXTENSIONS = {".wav", ".flac", ".mp3", ".ogg", ".m4a"}
 SPLITS = ("train", "validation", "test")
+SPLIT_ALIASES = {
+    "validation": ("validation", "dev", "val"),
+    "train": ("train",),
+    "test": ("test",),
+}
 TEXT_CANDIDATES = (
     "{split}.tsv",
     "{split}.csv",
@@ -27,6 +32,15 @@ TEXT_CANDIDATES = (
     "transcription_{split}.tsv",
     "transcription_{split}.csv",
     "metadata_{split}.csv",
+)
+FLEURS_TSV_COLUMNS = (
+    "line_id",
+    "file_name",
+    "raw_transcription",
+    "transcription",
+    "characters",
+    "num_samples",
+    "gender",
 )
 TEXT_KEYS = ("transcription", "sentence", "text", "raw_transcription")
 ID_KEYS = ("id", "file_name", "path", "audio", "audio_path", "filename")
@@ -111,21 +125,41 @@ def read_rows(path: Path) -> list[dict[str, str]]:
     if suffix in {".csv", ".tsv"}:
         delimiter = "\t" if suffix == ".tsv" else ","
         with path.open("r", encoding="utf-8-sig", newline="") as handle:
-            return list(csv.DictReader(handle, delimiter=delimiter))
+            rows = list(csv.reader(handle, delimiter=delimiter))
+        if not rows:
+            return []
+        header = rows[0]
+        known_header = any(key in header for key in TEXT_KEYS + ID_KEYS)
+        if known_header:
+            return [
+                {key: value for key, value in zip(header, row)}
+                for row in rows[1:]
+            ]
+        if suffix == ".tsv":
+            return [
+                {key: value for key, value in zip(FLEURS_TSV_COLUMNS, row)}
+                for row in rows
+            ]
+        return [
+            {f"col_{idx}": value for idx, value in enumerate(row)}
+            for row in rows
+        ]
     raise ValueError(f"Unsupported text file type: {path}")
 
 
 def find_text_file(language_dir: Path, split: str) -> Path | None:
-    for pattern in TEXT_CANDIDATES:
-        candidate = language_dir / pattern.format(split=split)
-        if candidate.exists():
-            return candidate
+    for source_split in SPLIT_ALIASES.get(split, (split,)):
+        for pattern in TEXT_CANDIDATES:
+            candidate = language_dir / pattern.format(split=source_split)
+            if candidate.exists():
+                return candidate
     for candidate in sorted(language_dir.rglob("*")):
         if not candidate.is_file():
             continue
         lower_name = candidate.name.lower()
-        if split in lower_name and candidate.suffix.lower() in {".csv", ".tsv", ".jsonl", ".json"}:
-            return candidate
+        for source_split in SPLIT_ALIASES.get(split, (split,)):
+            if source_split in lower_name and candidate.suffix.lower() in {".csv", ".tsv", ".jsonl", ".json"}:
+                return candidate
     return None
 
 
@@ -140,21 +174,22 @@ def extract_tarball(tarball: Path, extract_dir: Path) -> None:
 
 
 def find_audio_root(language_dir: Path, split: str, output_dir: Path, extract_audio: bool) -> Path:
-    tarball = language_dir / "audio" / f"{split}.tar.gz"
-    if tarball.exists() and extract_audio:
-        extract_dir = output_dir / "audio" / language_dir.name / split
-        extract_tarball(tarball, extract_dir)
-        return extract_dir
+    for source_split in SPLIT_ALIASES.get(split, (split,)):
+        tarball = language_dir / "audio" / f"{source_split}.tar.gz"
+        if tarball.exists() and extract_audio:
+            extract_dir = output_dir / "audio" / language_dir.name / source_split
+            extract_tarball(tarball, extract_dir)
+            return extract_dir
 
-    candidates = [
-        language_dir / "audio" / split,
-        language_dir / split,
-        language_dir / "audio",
-        language_dir,
-    ]
-    for candidate in candidates:
-        if candidate.exists() and any_audio_files(candidate):
-            return candidate
+        candidates = [
+            language_dir / "audio" / source_split,
+            language_dir / source_split,
+            language_dir / "audio",
+            language_dir,
+        ]
+        for candidate in candidates:
+            if candidate.exists() and any_audio_files(candidate):
+                return candidate
     return language_dir
 
 

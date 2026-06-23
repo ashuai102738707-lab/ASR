@@ -78,6 +78,25 @@ else
   echo "No prepare_fleurs.py found. Skipping data preparation." | tee "$RUN_DIR/prepare.log"
 fi
 
+python - "$RUN_DIR" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+run_dir = Path(sys.argv[1])
+summary_path = run_dir / "prepare_summary.json"
+if not summary_path.exists():
+    raise SystemExit("prepare_summary.json was not produced")
+
+summary = json.loads(summary_path.read_text(encoding="utf-8"))
+matched = sum(int(item.get("matched", 0) or 0) for item in summary)
+if matched == 0:
+    raise SystemExit(
+        "No manifest examples were matched. Check REMOTE_DATA_ROOT and FLEURS TSV/audio layout."
+    )
+print(f"Matched manifest examples: {matched}")
+PY
+
 if [[ -f scripts/analyze_tokenization.py ]]; then
   ANALYSIS_ENABLED="$(python - "$CONFIG" <<'PY'
 import sys

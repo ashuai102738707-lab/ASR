@@ -20,7 +20,6 @@ analysis:
   max_examples_per_language: 200
   tokenizers:
     - Qwen/Qwen3-0.6B
-    - openai/whisper-small
 
 model:
   speech_encoder_name: facebook/wav2vec2-xls-r-300m
