@@ -191,12 +191,6 @@ def extract_tarball(tarball: Path, extract_dir: Path) -> None:
 
 def find_audio_root(language_dir: Path, split: str, output_dir: Path, extract_audio: bool) -> Path:
     for source_split in SPLIT_ALIASES.get(split, (split,)):
-        tarball = language_dir / "audio" / f"{source_split}.tar.gz"
-        if tarball.exists() and extract_audio:
-            extract_dir = output_dir / "audio" / language_dir.name / source_split
-            extract_tarball(tarball, extract_dir)
-            return extract_dir
-
         candidates = [
             language_dir / "audio" / source_split,
             language_dir / source_split,
@@ -206,6 +200,12 @@ def find_audio_root(language_dir: Path, split: str, output_dir: Path, extract_au
         for candidate in candidates:
             if candidate.exists() and any_audio_files(candidate):
                 return candidate
+
+        tarball = language_dir / "audio" / f"{source_split}.tar.gz"
+        if tarball.exists() and extract_audio:
+            extract_dir = output_dir / "audio" / language_dir.name / source_split
+            extract_tarball(tarball, extract_dir)
+            return extract_dir
     return language_dir
 
 

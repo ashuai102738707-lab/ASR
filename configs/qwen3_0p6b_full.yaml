@@ -8,7 +8,7 @@ languages:
   - th_th
 
 prepare:
-  extract_audio: true
+  extract_audio: false
 
 analysis:
   enabled: true
