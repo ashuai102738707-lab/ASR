@@ -12,6 +12,16 @@ fi
 : "${REMOTE_DATA_ROOT:?Set REMOTE_DATA_ROOT}"
 : "${REMOTE_EXPERIMENT_ROOT:?Set REMOTE_EXPERIMENT_ROOT}"
 
+WORKSPACE_ROOT="$(cd "$(dirname "$REMOTE_EXPERIMENT_ROOT")/../.." && pwd)"
+if [[ "$REMOTE_EXPERIMENT_ROOT" == /datasets/xhm_files/* ]]; then
+  WORKSPACE_ROOT="/datasets/xhm_files"
+fi
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$WORKSPACE_ROOT/.cache}"
+export HF_HOME="${HF_HOME:-$XDG_CACHE_HOME/huggingface}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
+export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-$HF_HOME/datasets}"
+mkdir -p "$HF_HOME" "$TRANSFORMERS_CACHE" "$HF_DATASETS_CACHE"
+
 EXP_NAME="$(basename "$CONFIG")"
 EXP_NAME="${EXP_NAME%.*}"
 RUN_DIR="${REMOTE_EXPERIMENT_ROOT}/${EXP_NAME}_$(date +%Y%m%d_%H%M%S)"
@@ -33,6 +43,9 @@ fi
 echo "Run directory: $RUN_DIR"
 echo "Config: $CONFIG"
 echo "Data root: $REMOTE_DATA_ROOT"
+echo "HF_HOME: $HF_HOME"
+echo "TRANSFORMERS_CACHE: $TRANSFORMERS_CACHE"
+echo "HF_DATASETS_CACHE: $HF_DATASETS_CACHE"
 
 {
   echo "Python: $(python --version 2>&1)"
