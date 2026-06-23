@@ -32,6 +32,40 @@ echo "Run directory: $RUN_DIR"
 echo "Config: $CONFIG"
 echo "Data root: $REMOTE_DATA_ROOT"
 
+{
+  echo "Python: $(python --version 2>&1)"
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "nvidia-smi:"
+    nvidia-smi
+  else
+    echo "nvidia-smi: not found"
+  fi
+  python - <<'PY'
+import json
+import platform
+
+report = {
+    "python": platform.python_version(),
+    "platform": platform.platform(),
+}
+
+try:
+    import torch
+
+    report["torch"] = torch.__version__
+    report["torch_cuda"] = torch.version.cuda
+    report["cuda_available"] = torch.cuda.is_available()
+    report["gpu_count"] = torch.cuda.device_count()
+    report["gpus"] = [
+        torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())
+    ]
+except Exception as exc:
+    report["torch_error"] = repr(exc)
+
+print(json.dumps(report, ensure_ascii=False, indent=2))
+PY
+} 2>&1 | tee "$RUN_DIR/env_report.log"
+
 if [[ -f prepare_fleurs.py ]]; then
   python prepare_fleurs.py \
     --config "$CONFIG" \
