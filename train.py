@@ -72,6 +72,13 @@ def maybe_apply_lora(model: SpeechToQwen, train_cfg: dict[str, Any]) -> None:
     model.llm = get_peft_model(model.llm, peft_config)
 
 
+def save_trainable_state(model: SpeechToQwen, output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(model.projector.state_dict(), output_dir / "projector.pt")
+    if hasattr(model.llm, "peft_config"):
+        model.llm.save_pretrained(output_dir / "llm_adapter")
+
+
 def main() -> None:
     args = parse_args()
     config = load_config(args.config)
@@ -210,8 +217,7 @@ def main() -> None:
 
                 if save_every and global_step % save_every == 0:
                     checkpoint_dir = output_dir / f"checkpoint-{global_step}"
-                    checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                    torch.save(model.projector.state_dict(), checkpoint_dir / "projector.pt")
+                    save_trainable_state(model, checkpoint_dir)
 
                 if max_steps and global_step >= max_steps:
                     break
@@ -219,8 +225,7 @@ def main() -> None:
             break
 
     final_dir = output_dir / "final"
-    final_dir.mkdir(parents=True, exist_ok=True)
-    torch.save(model.projector.state_dict(), final_dir / "projector.pt")
+    save_trainable_state(model, final_dir)
     tokenizer.save_pretrained(final_dir / "tokenizer")
     print(f"Finished training at step {global_step}. Saved projector to {final_dir}")
 
