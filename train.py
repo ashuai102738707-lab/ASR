@@ -88,10 +88,19 @@ def main() -> None:
 
     llm_name = str(model_cfg.get("llm_name", "Qwen/Qwen3-0.6B"))
     speech_encoder_name = str(model_cfg.get("speech_encoder_name", "facebook/wav2vec2-xls-r-300m"))
-    tokenizer = AutoTokenizer.from_pretrained(llm_name, trust_remote_code=True)
+    local_files_only = bool(train_cfg.get("local_files_only", True))
+    tokenizer = AutoTokenizer.from_pretrained(
+        llm_name,
+        trust_remote_code=True,
+        local_files_only=local_files_only,
+    )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
-    feature_extractor = AutoFeatureExtractor.from_pretrained(speech_encoder_name, trust_remote_code=True)
+    feature_extractor = AutoFeatureExtractor.from_pretrained(
+        speech_encoder_name,
+        trust_remote_code=True,
+        local_files_only=local_files_only,
+    )
 
     manifest_dir = output_dir / "manifests"
     default_train_manifest = output_dir / "preprocessed" / "train.jsonl"

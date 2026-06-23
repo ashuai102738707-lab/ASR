@@ -30,6 +30,7 @@ data:
 
 train:
   seed: 42
+  local_files_only: true
   batch_size: 1
   gradient_accumulation_steps: 16
   epochs: 1

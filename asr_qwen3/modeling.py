@@ -34,6 +34,7 @@ class SpeechToQwen(nn.Module):
         model_kwargs = {
             "trust_remote_code": True,
             "use_safetensors": True,
+            "local_files_only": True,
         }
         if torch_dtype is not None:
             model_kwargs["dtype"] = torch_dtype
