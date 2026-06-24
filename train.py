@@ -61,6 +61,10 @@ def maybe_apply_lora(model: SpeechToQwen, train_cfg: dict[str, Any]) -> None:
         raise RuntimeError("peft is required when train.lora.enabled=true") from exc
 
     targets = lora_cfg.get("target_modules", ["q_proj", "k_proj", "v_proj", "o_proj"])
+    if isinstance(targets, str):
+        targets = targets.strip()
+    elif isinstance(targets, list) and len(targets) == 1 and str(targets[0]).strip() == "all-linear":
+        targets = "all-linear"
     peft_config = LoraConfig(
         r=int(lora_cfg.get("r", 8)),
         lora_alpha=int(lora_cfg.get("alpha", 16)),
